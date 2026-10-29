@@ -1,0 +1,24 @@
+{
+  "name": "nova-topup-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NOVA \u2014 an AI-powered top-up & digital services super app (full stack: Express + SQLite + React + streaming AI engine).",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w server && npm run build -w web",
+    "start": "npm run start -w server",
+    "test": "npm run test -w server",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
+    "seed": "npm run seed -w server",
+    "smoke": "npm run smoke -w web"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

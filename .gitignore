@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+web/dist/
+*.tsbuildinfo
+
+# runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+logs/
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
+coverage/
