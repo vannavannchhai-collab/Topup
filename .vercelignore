@@ -1,0 +1,13 @@
+# Vercel uploads the repo (each service builds from its own root).
+# Keep runtime state, build artifacts and local tooling out of the upload.
+data/
+**/dist/
+coverage/
+*.db
+*.db-shm
+*.db-wal
+.github/
+.git/
+node_modules/
+**/node_modules/
+*.log

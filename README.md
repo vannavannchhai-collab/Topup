@@ -106,7 +106,9 @@ Open <http://localhost:5173>. The Vite dev server proxies `/api` to `http://127.
 
 ## Deployment
 
-**Single service (recommended).** `npm run build && npm start` — Express serves `web/dist` with SPA fallback, so one process on one port serves the whole app.
+**Vercel — multiple services (one project, one domain).** A root `vercel.json` deploys `web` (Vite SPA) at `/` and `api` (Express container) at `/api/*`; the browser reaches the API through that public rewrite, so no service-to-service bindings are involved. See [`docs/VERCEL.md`](docs/VERCEL.md) for the topology, env vars, the SQLite/`/tmp` caveat and `vercel dev` usage.
+
+**Single service.** `npm run build && npm start` — Express serves `web/dist` with SPA fallback, so one process on one port serves the whole app.
 
 **Docker.**
 ```bash
@@ -123,6 +125,7 @@ docker run -p 8787:8787 -e JWT_SECRET="$(openssl rand -hex 32)" nova
 | `JWT_SECRET` | dev fallback | **Set in production** — signs session tokens |
 | `CORS_ORIGINS` | `*` | Comma-separated allowlist |
 | `RATE_MAX` / `ASSISTANT_RATE_MAX` | `240` / `40` per minute | Rate limiting |
+| `VITE_API_BASE` | *(empty)* | Web only — set if the API is on another origin; empty keeps same-origin `/api` |
 | `AI_BASE_URL` / `AI_API_KEY` / `AI_MODEL` | unset | Upgrade to a hosted LLM |
 | `DEMO_MODE` | `true` | Welcome credit + demo affordances |
 
@@ -147,6 +150,7 @@ CI (`.github/workflows/ci.yml`) runs typecheck → tests → build → packaged 
 │       ├── components/           # Layout · ProductCard · Checkout · Charts · ui primitives
 │       ├── lib/                  # api client (incl. SSE), auth, i18n (km/en), format, hooks, toast
 │       └── pages/                # Home · Shop · Assistant · Wallet · Orders · Admin · Help · Auth
+├── vercel.json                   # multi-service deploy: web (vite) + api (container)
 ├── scripts/dev.mjs               # dev orchestrator
 ├── docs/ARCHITECTURE.md          # data model, request flows, AI maths
 └── docs/API.md                   # endpoint reference

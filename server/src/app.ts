@@ -54,9 +54,10 @@ export function createApp() {
   app.use('/api/help', helpRouter);
   app.use('/api/insights', insightsRouter);
 
-  // Serve the built SPA when it exists (single-service production deploy).
+  // Serve the built SPA when it exists (single-service Docker deploy).
+  // On Vercel the SPA is its own service, so the API only answers /api/*.
   const webDist = path.resolve(config.rootDir, 'web', 'dist');
-  if (fs.existsSync(path.join(webDist, 'index.html'))) {
+  if (!config.hosted && fs.existsSync(path.join(webDist, 'index.html'))) {
     app.use(express.static(webDist, { maxAge: '1h', index: false }));
     app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(webDist, 'index.html')));
   }

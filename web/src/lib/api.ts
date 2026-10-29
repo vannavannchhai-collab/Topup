@@ -1,5 +1,18 @@
 const TOKEN_KEY = 'nova.token';
 
+/**
+ * API origin. Default is same-origin `/api`, which is what every target uses:
+ *  · npm run dev          → Vite proxies /api to the API process
+ *  · vercel dev / prod    → root vercel.json rewrites /api/(.*) to the `api` service
+ *  · Docker single image  → Express serves both the SPA and /api
+ * Set VITE_API_BASE only if the API is deployed on a different origin.
+ */
+/** `import.meta.env` only exists inside Vite; guard it for Node-based render tests. */
+const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
+const API_BASE = (env.VITE_API_BASE ?? '').replace(/\/$/, '');
+
+export const apiUrl = (path: string): string => `${API_BASE}/api${path}`;
+
 export class ApiError extends Error {
   status: number;
   code: string;
@@ -21,7 +34,7 @@ export const tokenStore = {
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStore.get();
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(apiUrl(path), {
     ...options,
     headers: {
       'content-type': 'application/json',
@@ -72,7 +85,7 @@ export async function streamChat(
   signal?: AbortSignal,
 ): Promise<void> {
   const token = tokenStore.get();
-  const response = await fetch('/api/assistant/stream', {
+  const response = await fetch(apiUrl('/assistant/stream'), {
     method: 'POST',
     headers: {
       'content-type': 'application/json',

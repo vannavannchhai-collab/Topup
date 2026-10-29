@@ -111,6 +111,17 @@ Two transforms are also benchmarked — identity and `log1p` — because revenue
 - **Charts**: hand-written SVG (`ForecastChart`, `Sparkbars`, `BarList`, `RiskMeter`) — no chart dependency, fully themeable, responsive via `viewBox`.
 - **Styling**: Tailwind v4 `@theme` tokens (`brand`, `aqua`, `gold`, `ink`), glassmorphism utilities, aurora background, custom keyframes, and reduced-motion fallbacks.
 
+## Deployment topology
+
+Two shapes are supported from one codebase:
+
+| Target | Shape | API base used by the SPA |
+|---|---|---|
+| Vercel services | `web` (static Vite) at `/` + `api` (container) at `/api/*`, routed by root `vercel.json` | same-origin `/api` via the public rewrite |
+| Docker / single process | one container, Express serves `web/dist` + `/api` | same-origin `/api` |
+
+The API detects a hosted runtime (`config.hosted`, set from `VERCEL`/`AWS_LAMBDA_FUNCTION_NAME`) and then (a) stores SQLite in `/tmp` instead of the read-only repo mount and (b) refuses to serve the SPA, so it behaves as a pure JSON service behind the platform router. No service-to-service calls exist, so no internal bindings are required — see [`VERCEL.md`](VERCEL.md).
+
 ## Testing strategy
 
 | Suite | Covers |
