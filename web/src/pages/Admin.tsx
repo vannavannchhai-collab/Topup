@@ -176,8 +176,8 @@ export function AdminPage() {
                 format={(value) => (series === 'revenue' ? money(value * 100) : String(value))}
               />
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <Stat label={t('admin.mape')} value={`${active.mape}%`} tone="text-mint-400" />
-                <Stat label={t('admin.baseline')} value={`${active.baselineMape}%`} tone="text-white/60" />
+                <Stat label={active.errorMetric} value={`${active.errorPct}%`} tone={active.errorPct <= 30 ? 'text-mint-400' : 'text-gold-300'} />
+                <Stat label={t('admin.baseline')} value={`${active.baselineErrorPct}%`} tone="text-white/60" />
                 <Stat
                   label={t('admin.trend')}
                   value={`${active.trendPerDay >= 0 ? '+' : ''}${active.trendPerDay}${pickText('/ថ្ងៃ', '/day')}`}

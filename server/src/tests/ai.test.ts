@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { tokenize, cosine, TfidfIndex, expandQuery, normalize } from '../ai/text.js';
 import { understand, extractEntities } from '../ai/nlu.js';
-import { buildForecast, densifyDaily, seasonalNaive } from '../ai/forecast.js';
+import { buildForecast, buildRevenueForecast, densifyDaily, seasonalNaive } from '../ai/forecast.js';
 
 describe('tokenizer', () => {
   test('splits English into stemmed tokens', () => {
@@ -96,8 +96,29 @@ describe('forecasting', () => {
 
   test('beats or matches the seasonal-naive baseline on a seasonal series', () => {
     const result = buildForecast(makeSeries(60), 7);
-    assert.ok(result.mape <= result.baselineMape + 1, `mape ${result.mape} vs baseline ${result.baselineMape}`);
+    assert.ok(
+      result.errorPct <= result.baselineErrorPct + 1,
+      `wape ${result.errorPct} vs baseline ${result.baselineErrorPct}`,
+    );
+    assert.equal(result.errorMetric, 'WAPE');
     assert.equal(result.seasonality, 7);
+  });
+
+  test('decomposed revenue forecast beats a direct fit on spiky revenue', () => {
+    const days = 90;
+    const revenue = makeSeries(days).map((point) => ({ date: point.date, value: point.value * 12 }));
+    const orders = makeSeries(days);
+    // Inject realistic single-order spikes into the most recent revenue days.
+    revenue[revenue.length - 3].value += 900;
+    revenue[revenue.length - 6].value += 650;
+
+    const direct = buildForecast(revenue, 7);
+    const composite = buildRevenueForecast(revenue, orders, 7);
+
+    assert.equal(composite.forecast.length, 7);
+    assert.ok(composite.errorPct <= direct.errorPct, `${composite.errorPct} vs ${direct.errorPct}`);
+    assert.ok(composite.forecast.every((point) => point.value >= 0));
+    assert.equal(composite.components.orders.forecast.length, 7);
   });
 
   test('seasonal naive repeats the last week pattern', () => {

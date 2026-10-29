@@ -126,14 +126,15 @@ Replaying the same `idempotencyKey` returns `{ order, replayed: true }` with the
 ## Admin (role `admin` required)
 
 `GET /api/admin/metrics` → revenue, order count, AOV, users, review queue, today's GMV + growth, 45-day series
-`GET /api/admin/forecast?horizon=7` → `{ revenue: ForecastResult, orders: ForecastResult }`
+`GET /api/admin/forecast?horizon=7` → `{ revenue, revenueDirect, orders }` (all `ForecastResult`; `revenue` is the decomposed `orders × AOV` model, `revenueDirect` the raw fit kept as a benchmark)
 
 ```json
 { "history": [{ "date": "2026-10-01", "value": 12, "kind": "actual" }],
   "forecast": [{ "date": "2026-10-30", "value": 14, "lower": 9, "upper": 19, "kind": "forecast" }],
-  "mape": 6.8, "baselineMape": 21.4, "ensembleWeight": 0.84,
+  "errorPct": 12.4, "baselineErrorPct": 21.4, "errorMetric": "WAPE", "transform": "log1p",
+  "ensembleWeight": 0.84,
   "seasonality": 7, "trendPerDay": 0.31, "confidence": "high",
-  "model": "Ensemble · Holt-Winters 84% + seasonal-naive 16%" }
+  "model": "Log-linear Holt-Winters 84% + seasonal-naive 16% (m=7)" }
 ```
 
 `GET /api/admin/top-products` → top 12 by revenue

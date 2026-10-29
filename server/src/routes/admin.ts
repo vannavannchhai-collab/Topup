@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { q } from '../db/index.js';
 import { asyncHandler } from '../lib/http.js';
 import { requireAdmin, requireAuth } from '../middleware/auth.js';
-import { buildForecast, densifyDaily } from '../ai/forecast.js';
+import { buildForecast, buildRevenueForecast, densifyDaily } from '../ai/forecast.js';
 import { serializeOrder } from '../lib/payments.js';
 
 export const adminRouter = Router();
@@ -68,8 +68,11 @@ adminRouter.get(
     );
     const orderSeries = densifyDaily(orderRows, 45);
 
+    const revenueDollars = revenueSeries.map((p) => ({ date: p.date, value: Math.round(p.value / 100) }));
+
     res.json({
-      revenue: buildForecast(revenueSeries.map((p) => ({ date: p.date, value: Math.round(p.value / 100) })), horizon),
+      revenue: buildRevenueForecast(revenueDollars, orderSeries, horizon),
+      revenueDirect: buildForecast(revenueDollars, horizon),
       orders: buildForecast(orderSeries, horizon),
     });
   }),

@@ -129,8 +129,10 @@ export interface ForecastPoint {
 export interface ForecastResult {
   history: ForecastPoint[];
   forecast: ForecastPoint[];
-  mape: number;
-  baselineMape: number;
+  errorPct: number;
+  baselineErrorPct: number;
+  errorMetric: 'WAPE';
+  transform: 'identity' | 'log1p';
   ensembleWeight: number;
   seasonality: number;
   trendPerDay: number;

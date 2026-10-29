@@ -459,14 +459,16 @@ export async function seedAll({ destructive = true }: { destructive?: boolean } 
     return products[0];
   };
 
+  // 90 days gives the forecast and the 30-vs-60-day insight windows real depth.
+  const HISTORY_DAYS = 90;
   let orderCount = 0;
-  for (let dayOffset = 44; dayOffset >= 0; dayOffset -= 1) {
+  for (let dayOffset = HISTORY_DAYS - 1; dayOffset >= 0; dayOffset -= 1) {
     const day = new Date(now);
     day.setDate(day.getDate() - dayOffset);
     const weekday = day.getDay(); // 0 Sun ... 6 Sat
     const weekendBoost = weekday === 0 || weekday === 6 ? 1.45 : 1;
-    const growth = 1 + (44 - dayOffset) / 44 * 0.85; // steady upward trend
-    const baseOrders = 5.5 * weekendBoost * growth;
+    const growth = 1 + (HISTORY_DAYS - 1 - dayOffset) / (HISTORY_DAYS - 1) * 0.9; // steady upward trend
+    const baseOrders = 4.4 * weekendBoost * growth;
     const count = Math.max(1, Math.round(baseOrders + (random() - 0.5) * 3));
 
     for (let i = 0; i < count; i += 1) {

@@ -35,7 +35,7 @@ npm install && npm run seed && npm run dev
 | **Streaming** | Real SSE token stream (`event: meta → token → done`) consumed by a custom `fetch` reader, so auth headers still work | `server/src/routes/assistant.ts`, `web/src/lib/api.ts` |
 | **Hybrid recommender** | Content similarity + provider/category affinity with exponential recency decay + price-fit + popularity prior, plus co-purchase lift ("also bought") | `server/src/ai/recommend.ts` |
 | **Explainable fraud model** | Calibrated logistic model over 7 behavioural features; every contribution is exposed and human-readable in both languages | `server/src/ai/risk.ts` |
-| **Demand forecasting** | Additive Holt‑Winters (α/β/γ) ensembled with a drift-adjusted seasonal-naive baseline, weighted by true out-of-sample MAPE on a hold-out window | `server/src/ai/forecast.ts` |
+| **Demand forecasting** | Additive Holt‑Winters ensembled with a drift-adjusted seasonal-naive baseline, benchmarked across identity/log transforms, weighted by true out-of-sample WAPE — plus revenue decomposition (`orders × AOV`) that cut revenue error from 48% → 22% | `server/src/ai/forecast.ts` |
 | **Proactive insights** | Month-over-month spend trend, purchase-cadence prediction (median interval), value-swap detection, points and runway nudges | `server/src/ai/insights.ts` |
 | **Knowledge retrieval** | Bilingual help-centre with query-relevant sentence extraction used as citations in answers | `server/src/ai/knowledge.ts` |
 
@@ -55,7 +55,7 @@ npm install && npm run seed && npm run dev
 
 **Admin**
 - Revenue / GMV / AOV / review-queue metrics, 45-day revenue series
-- Forecast chart with confidence band, model name, MAPE vs baseline, trend/day
+- Forecast chart with confidence band, model name, WAPE vs baseline, trend/day
 - Risk queue with approve / reject-and-refund actions
 - Top products by revenue, top customers, assistant intent mix and latency
 
@@ -63,7 +63,7 @@ npm install && npm run seed && npm run dev
 - scrypt password hashing, HS256 JWT sessions, role-based access, per-route rate limiting
 - Money as integer cents, nest-safe SQLite transactions (savepoints), idempotency keys
 - Zod-validated request bodies with field-level error details
-- 32 automated tests (unit + full API integration incl. SSE)
+- 33 automated tests (unit + full API integration incl. SSE) and a render smoke test over all 8 routes
 
 ---
 
@@ -73,7 +73,7 @@ npm install && npm run seed && npm run dev
 # 1. install (Node ≥ 22.5 — uses the built-in node:sqlite driver)
 npm install
 
-# 2. seed the demo world (36 products, 10 users, ~390 orders across 45 days)
+# 2. seed the demo world (36 products, 10 users, ~650 orders across 90 days)
 npm run seed
 
 # 3. run API + web together
@@ -86,7 +86,7 @@ Open <http://localhost:5173>. The Vite dev server proxies `/api` to `http://127.
 
 | Role | Email | Password | Notes |
 |---|---|---|---|
-| Customer | `demo@nova.ai` | `Demo@1234` | 51 orders of history, $42.50 wallet, 438 points |
+| Customer | `demo@nova.ai` | `Demo@1234` | months of order history, funded wallet, reward points |
 | Admin | `admin@nova.ai` | `Admin@123` | Full analytics console |
 | New signup | — | — | `$50` welcome credit in demo mode |
 
@@ -97,7 +97,7 @@ Open <http://localhost:5173>. The Vite dev server proxies `/api` to `http://127.
 | `npm run dev` | API (:8787) + Vite (:5173) with prefixed logs |
 | `npm run dev:server` / `npm run dev:web` | Run one side only |
 | `npm run seed` | Rebuild the demo database (destructive) |
-| `npm test` | 32 tests: tokenizer, NLU, forecasting, API + SSE |
+| `npm test` | 33 tests: tokenizer, NLU, forecasting, API + SSE |
 | `npm run typecheck` | Strict TypeScript across server and web |
 | `npm run build` | Compile server (`tsc`) + bundle web (`vite build`) |
 | `npm start` | Serve the built SPA and API from one process (:8787) |

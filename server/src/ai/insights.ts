@@ -30,9 +30,6 @@ const median = (values: number[]): number => {
 export function buildInsights(userId: string): Insight[] {
   const insights: Insight[] = [];
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
   const orders = q.all<{
     id: string;
     created_at: string;
@@ -78,31 +75,33 @@ export function buildInsights(userId: string): Insight[] {
     return insights;
   }
 
-  // 1. Month-over-month spend trend.
+  // 1. Rolling 30-day spend trend (smoother and fairer than calendar months).
+  const windowStart = new Date(now.getTime() - 30 * 86_400_000);
+  const previousStart = new Date(now.getTime() - 60 * 86_400_000);
   const thisMonth = orders
-    .filter((order) => new Date(order.created_at) >= monthStart)
+    .filter((order) => new Date(order.created_at) >= windowStart)
     .reduce((sum, order) => sum + order.amount_cents, 0);
   const lastMonth = orders
     .filter((order) => {
       const date = new Date(order.created_at);
-      return date >= prevStart && date < monthStart;
+      return date >= previousStart && date < windowStart;
     })
     .reduce((sum, order) => sum + order.amount_cents, 0);
 
-  if (lastMonth > 0) {
-    const delta = ((thisMonth - lastMonth) / lastMonth) * 100;
+  if (thisMonth + lastMonth > 0) {
+    const delta = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 100;
     const up = delta >= 0;
     insights.push({
       id: 'spend-trend',
       tone: up ? 'info' : 'win',
-      titleEn: `Spending is ${up ? 'up' : 'down'} ${Math.abs(delta).toFixed(0)}% this month`,
-      titleKm: `ការចំណាយ${up ? 'កើនឡើង' : 'ថយចុះ'} ${Math.abs(delta).toFixed(0)}% ខែនេះ`,
-      bodyEn: `${money(thisMonth)} so far vs ${money(lastMonth)} last month. ${
+      titleEn: `Spending is ${up ? 'up' : 'down'} ${Math.abs(delta).toFixed(0)}% over 30 days`,
+      titleKm: `ការចំណាយ${up ? 'កើនឡើង' : 'ថយចុះ'} ${Math.abs(delta).toFixed(0)}% ក្នុង 30 ថ្ងៃ`,
+      bodyEn: `${money(thisMonth)} in the last 30 days vs ${money(lastMonth)} the 30 days before. ${
         up
           ? 'A 7-day bundle would cut about 12% off your running rate.'
           : 'Nice — your AI-guided picks are saving you money.'
       }`,
-      bodyKm: `${money(thisMonth)} ខែនេះ ធៀបនឹង ${money(lastMonth)} ខែមុន។ ${
+      bodyKm: `${money(thisMonth)} ក្នុង 30 ថ្ងៃចុងក្រោយ ធៀបនឹង ${money(lastMonth)} 30 ថ្ងៃមុន។ ${
         up ? 'កញ្ចប់ 7 ថ្ងៃអាចសន្សំបានប្រហែល 12%។' : 'ល្អណាស់ — ជម្រើសដែល AI ណែនាំកំពុងជួយសន្សំប្រាក់។'
       }`,
       metric: money(thisMonth),

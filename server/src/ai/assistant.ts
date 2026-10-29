@@ -184,8 +184,8 @@ function composeBuiltin(
       const nextWeek = forecast.forecast.reduce((sum, point) => sum + point.value, 0);
       text = tr(
         locale,
-        `📈 **ការព្យាករណ៍តម្រូវការ (7 ថ្ងៃខាងមុខ)**\n• គំរូ៖ ${forecast.model}\n• ការបញ្ជាទិញរំពឹង៖ ${nextWeek}\n• និន្នាការ៖ ${forecast.trendPerDay > 0 ? 'កើនឡើង' : 'ថយចុះ'} ${Math.abs(forecast.trendPerDay).toFixed(2)}/ថ្ងៃ\n• ភាពត្រឹមត្រូវ (MAPE)៖ ${forecast.mape}% ធៀបនឹង baseline ${forecast.baselineMape}%\n\nដំបូន្មាន៖ រៀបចំស្តុកបន្ថែម 15-20% សម្រាប់ចុងសប្តាហ៍។`,
-        `📈 **Demand forecast (next 7 days)**\n• Model: ${forecast.model}\n• Expected orders: ${nextWeek}\n• Trend: ${forecast.trendPerDay >= 0 ? 'up' : 'down'} ${Math.abs(forecast.trendPerDay).toFixed(2)}/day\n• Accuracy (MAPE): ${forecast.mape}% vs ${forecast.baselineMape}% seasonal-naive baseline\n\nRecommendation: hold 15-20% extra stock for the weekend spike.`,
+        `📈 **ការព្យាករណ៍តម្រូវការ (7 ថ្ងៃខាងមុខ)**\n• គំរូ៖ ${forecast.model}\n• ការបញ្ជាទិញរំពឹង៖ ${nextWeek}\n• និន្នាការ៖ ${forecast.trendPerDay > 0 ? 'កើនឡើង' : 'ថយចុះ'} ${Math.abs(forecast.trendPerDay).toFixed(2)}/ថ្ងៃ\n• ភាពត្រឹមត្រូវ (WAPE)៖ ${forecast.errorPct}% ធៀបនឹង baseline ${forecast.baselineErrorPct}%\n\nដំបូន្មាន៖ រៀបចំស្តុកបន្ថែម 15-20% សម្រាប់ចុងសប្តាហ៍។`,
+        `📈 **Demand forecast (next 7 days)**\n• Model: ${forecast.model}\n• Expected orders: ${nextWeek}\n• Trend: ${forecast.trendPerDay >= 0 ? 'up' : 'down'} ${Math.abs(forecast.trendPerDay).toFixed(2)}/day\n• Accuracy (WAPE): ${forecast.errorPct}% vs ${forecast.baselineErrorPct}% seasonal-naive baseline\n\nRecommendation: hold 15-20% extra stock for the weekend spike.`,
       );
       citations = [{ id: 'kb-business', titleEn: 'For small businesses and agents', titleKm: 'សម្រាប់អាជីវកម្មតូច' }];
       suggestions = [{ kind: 'action', labelKm: 'ផ្ទាំងវិភាគ', labelEn: 'Open analytics', payload: { route: '/admin' } }];

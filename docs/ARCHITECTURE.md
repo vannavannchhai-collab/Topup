@@ -94,14 +94,14 @@ score = σ(z)  →  band: < 0.42 low · 0.42–0.72 review · ≥ 0.72 block
 ```
 Weights: amount 1.9, velocity 1.4, provider/prefix mismatch 1.3, recipient novelty 1.1, account age 0.9, quantity 0.8, unusual hour 0.6. Contributions are surfaced to the user, so a block is always explainable.
 
-**Forecasting.**
+**Forecasting.** Revenue is decomposed as `orders × average order value`: orders carry the volatile weekly rhythm while AOV drifts slowly, so multiplying two stable forecasts removes the spikes caused by single large bill payments (in the seeded dataset this cut revenue WAPE from ~48% to ~22%).
 
 1. Additive Holt-Winters: `level`, `trend`, `seasonal[m]` with α=0.32, β=0.08, γ=0.28.
 2. Drift-adjusted seasonal-naive baseline (repeat last week × momentum ratio, clamped 0.7–1.6).
-3. Both are backtested on a true hold-out tail; weights are inverse-MAPE (`w = (1/E_hw)/((1/E_hw)+(1/E_naive))`).
+3. Both are backtested on a true hold-out tail in original units, scored with **WAPE** (`Σ|error| / Σ|actual|`) — MAPE is unusable on retail series with near-zero days. Weights are inverse-error: `w = (1/E_hw)/((1/E_hw)+(1/E_naive))`.
 4. The ensemble produces a point forecast plus an ~80% band `±1.28·σ√h`.
 
-The model name, MAPE, baseline MAPE and blend weight are all returned by the API and rendered in the admin console.
+Two transforms are also benchmarked — identity and `log1p` — because revenue series are multiplicative; the backtest picks the better one, so the panel can report e.g. `Log-linear Holt-Winters 56% + seasonal-naive 44% (m=7)` with WAPE, baseline WAPE, blend weight and trend/day.
 
 ## Frontend architecture
 
